@@ -1,0 +1,18 @@
+pkgname=tally
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Minimalist multi-list task manager with nested subtasks'
+arch=('x86_64' 'aarch64')
+license=('MIT')
+depends=('qt6-base' 'qt6-declarative' 'qt6-wayland' 'xdg-desktop-portal')
+makedepends=('gcc' 'make')
+source=()
+sha256sums=()
+build() { cd "$startdir/.."; ./bin/build; }
+package() {
+  cd "$startdir/.."
+  install -Dm755 build/tally "$pkgdir/usr/bin/tally"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 "$startdir/tally.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/tally.svg"
+  install -Dm644 "$startdir/tally.desktop" "$pkgdir/usr/share/applications/tally.desktop"
+}

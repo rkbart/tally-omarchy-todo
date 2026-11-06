@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Tally
+Comment=Minimalist task lists with nested subtasks
+Exec=tally
+Icon=tally
+Terminal=false
+Categories=Utility;Office;
+StartupWMClass=tally
