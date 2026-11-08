@@ -46,6 +46,11 @@ scp ~/.local/share/Tally/lists.json <user>@<new-computer>:~/.local/share/Tally/l
 | `+` | Add a subtask when allowed |
 | `↑` / `↓` | Move a task through rows and levels |
 | `?` | Show shortcuts |
+| `◐` | Change Tally's theme |
 | `Q` | Quit |
 
 Delete a task to show a short-lived **Undo** banner.
+
+The Tally theme picker offers **Follow system**, **Tally Dark**, and
+**Tally Light**. Follow system tracks Omarchy's active palette; the Tally
+themes only change this app.

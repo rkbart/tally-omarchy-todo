@@ -6,17 +6,17 @@ import QtQuick.Layouts
 ApplicationWindow {
     id: win
     width: 940; height: 690; minimumWidth: 360; minimumHeight: 400
-    visible: true; title: "Tally"; color: "#111214"
-    Material.theme: Material.Dark
+    visible: true; title: "Tally"; color: canvas
+    Material.theme: theme.lightMode ? Material.Light : Material.Dark
     Material.accent: theme.accent
     Material.roundedScale: theme.radius
-    property color canvas: "#101113"
-    property color topSurface: "#191a1d"
-    property color raisedSurface: "#202125"
-    property color divider: "#2b2c31"
-    property color treeGuide: "#3a3b40"
-    property color primaryText: "#f1f0eb"
-    property color secondaryText: "#a0a1a6"
+    property color canvas: theme.darkBackground
+    property color topSurface: theme.darkerBackground
+    property color raisedSurface: theme.background
+    property color divider: Qt.darker(theme.muted,1.7)
+    property color treeGuide: Qt.darker(theme.muted,1.3)
+    property color primaryText: theme.foreground
+    property color secondaryText: theme.muted
     property bool reducedMotion: Qt.styleHints.accessibility.motionPreference === 1
     property int taskMotionDuration: reducedMotion ? 0 : 190
     property string selected: backend.currentListId
@@ -149,7 +149,7 @@ ApplicationWindow {
                             anchors.fill:parent
                             anchors.margins:4
                             radius:Math.min(4,theme.radius)
-                            color:parent.highlighted?"#303128":parent.hovered?"#26272b":"transparent"
+                            color:parent.highlighted?theme.selection:parent.hovered?theme.lighterBackground:"transparent"
                         }
                     }
                     popup:Popup {
@@ -167,8 +167,8 @@ ApplicationWindow {
                         background:Rectangle { color:raisedSurface;border.width:1;border.color:divider;radius:Math.min(6,theme.radius) }
                     }
                     background: Rectangle { color:raisedSurface; radius:Math.min(5,theme.radius); border.width:listPicker.popup.visible?1:0; border.color:theme.accent }
-                    contentItem: Text { leftPadding:10; rightPadding:26; text:listPicker.displayText; color:"#dad9d5"; font.pixelSize:12; elide:Text.ElideRight; verticalAlignment:Text.AlignVCenter }
-                    indicator: Text { x:listPicker.width-width-9; y:(listPicker.height-height)/2; text:"⌄"; color:"#9b9da3"; font.pixelSize:13 }
+                    contentItem: Text { leftPadding:10; rightPadding:26; text:listPicker.displayText; color:primaryText; font.pixelSize:12; elide:Text.ElideRight; verticalAlignment:Text.AlignVCenter }
+                    indicator: Text { x:listPicker.width-width-9; y:(listPicker.height-height)/2; text:"⌄"; color:theme.lightForeground; font.pixelSize:13 }
                 }
                 ToolButton {
                     text:"+"
@@ -176,7 +176,7 @@ ApplicationWindow {
                     implicitWidth:36
                     implicitHeight:36
                     Accessible.name:qsTr("New list")
-                    background:Rectangle { radius:Math.min(5,theme.radius); color:parent.hovered?"#2b2c30":"transparent" }
+                    background:Rectangle { radius:Math.min(5,theme.radius); color:parent.hovered?theme.selection:"transparent" }
                     contentItem:Text{text:"+";color:theme.accent;font.pixelSize:20;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
                     ToolTip.visible:hovered
                     ToolTip.text:qsTr("New list")
@@ -184,7 +184,7 @@ ApplicationWindow {
                 Item { Layout.fillWidth:true }
                 Text { text: qsTr("%1 open").arg(activeList.count||0); color:secondaryText; font.pixelSize:11 }
                 Rectangle { width:1;height:20;color:divider }
-                ToolButton { text:"?"; onClicked:helpVisible=true; contentItem:Text { text:parent.text;color:"#a8a9ad";horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;font.pixelSize:14 } }
+                ToolButton { text:"?"; onClicked:helpVisible=true; contentItem:Text { text:parent.text;color:theme.lightForeground;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;font.pixelSize:14 } }
             }
         }
         RowLayout { Layout.fillWidth:true; Layout.fillHeight:true; spacing:0
@@ -203,7 +203,7 @@ ApplicationWindow {
                             readOnly:!editing
                             selectByMouse:editing
                             leftPadding:0; rightPadding:0; topPadding:0; bottomPadding:0
-                            color:"#f2f1ec"
+                            color:primaryText
                             font.pixelSize:24; font.weight:Font.DemiBold
                             background:Item{}
                             onAccepted:{backend.renameList(selected,text);editing=false;focus=false}
@@ -213,9 +213,17 @@ ApplicationWindow {
                             ToolTip.text: qsTr("Edit list name")
                         }
                         ToolButton {
+                            text:"◐"
+                            onClicked:themeDialog.open()
+                            Accessible.name:qsTr("Change Tally theme")
+                            ToolTip.visible:hovered
+                            ToolTip.text:qsTr("Change Tally theme")
+                            contentItem:Text{text:parent.text;color:theme.accent;font.pixelSize:16;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
+                        }
+                        ToolButton {
                             text:"···"
                             onClicked: { listContext.listId=selected; listContext.popup() }
-                            contentItem:Text{text:parent.text;color:"#898b91";font.pixelSize:18;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
+                            contentItem:Text{text:parent.text;color:theme.lightForeground;font.pixelSize:18;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
                         }
                     }
                     Rectangle { Layout.fillWidth:true; Layout.preferredHeight:42; radius:Math.min(5,theme.radius);color:topSurface;border.width:taskEntry.activeFocus?1:0;border.color:theme.accent
@@ -224,7 +232,7 @@ ApplicationWindow {
                                 id:taskEntry
                                 anchors.fill:parent
                                 placeholderText:""
-                                font.pixelSize:12;color:"#eeede8"
+                                font.pixelSize:12;color:primaryText
                                 leftPadding:6;rightPadding:4
                                 background:Item{}
                                 selectByMouse:true
@@ -235,17 +243,18 @@ ApplicationWindow {
                                 anchors.left:parent.left;anchors.leftMargin:6
                                 anchors.verticalCenter:parent.verticalCenter
                                 text:qsTr("Add a task")
-                                color:"#85868c";font.pixelSize:12
+                                color:secondaryText;font.pixelSize:12
                                 visible:taskEntry.text.length===0&&!taskEntry.activeFocus
                             }
                         }
                     }
-                    Text { visible:backend.error.length>0;text:backend.error;color:"#ff837b";font.pixelSize:11 }
+                    Text { visible:backend.error.length>0;text:backend.error;color:theme.red;font.pixelSize:11 }
                     ListView {
                         id:taskScroll
-                        Layout.fillWidth:true;Layout.fillHeight:true
+                        Layout.fillWidth:true;Layout.fillHeight:true;Layout.minimumHeight:0
                         clip:true;spacing:0;model:taskModel
                         boundsBehavior:Flickable.StopAtBounds
+                        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
                         move:Transition {
                             NumberAnimation { properties:"y";duration:win.taskMotionDuration;easing.type:Easing.OutCubic }
                         }
@@ -305,10 +314,26 @@ ApplicationWindow {
                     }
                     RowLayout { Layout.fillWidth:true;spacing:8
                         Text { text:qsTr("%1 tasks").arg(allTasksFlat().length);color:secondaryText;font.pixelSize:10;Layout.fillWidth:true }
-                        Text { text:qsTr("Ctrl+N to add");color:"#74767c";font.pixelSize:10 }
+                        Text { text:qsTr("Ctrl+N to add");color:theme.darkForeground;font.pixelSize:10 }
                     }
                 }
             }
+        }
+    }
+
+    component ModalHeader: Rectangle {
+        property string heading
+        implicitHeight:46
+        color:win.raisedSurface
+        Text {
+            anchors.fill:parent
+            anchors.leftMargin:18
+            anchors.rightMargin:18
+            text:parent.heading
+            color:win.primaryText
+            font.pixelSize:16
+            font.weight:Font.DemiBold
+            verticalAlignment:Text.AlignVCenter
         }
     }
 
@@ -322,7 +347,7 @@ ApplicationWindow {
         Behavior on indentation {
             NumberAnimation { duration:win.taskMotionDuration;easing.type:Easing.OutCubic }
         }
-        Rectangle { anchors.fill:parent;radius:Math.min(4,theme.radius);color:rowHover.hovered?"#1a1b1f":"transparent" }
+        Rectangle { anchors.fill:parent;radius:Math.min(4,theme.radius);color:rowHover.hovered?theme.selection:"transparent" }
         HoverHandler { id:rowHover }
         Repeater {
             model:visualDepth
@@ -354,14 +379,14 @@ ApplicationWindow {
                 Accessible.name:win.taskCollapsed(task.id)?qsTr("Expand subtasks"):qsTr("Collapse subtasks")
                 ToolTip.visible:hovered&&enabled
                 ToolTip.text:win.taskCollapsed(task.id)?qsTr("Expand subtasks"):qsTr("Collapse subtasks")
-                background:Rectangle { radius:Math.min(4,theme.radius);color:parent.hovered&&parent.enabled?"#2b2c30":"transparent" }
-                contentItem:Text { text:parent.text;color:parent.enabled?(parent.hovered?theme.accent:"#8e9096"):"transparent";font.pixelSize:14;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter }
+                background:Rectangle { radius:Math.min(4,theme.radius);color:parent.hovered&&parent.enabled?theme.selection:"transparent" }
+                contentItem:Text { text:parent.text;color:parent.enabled?(parent.hovered?theme.accent:theme.muted):"transparent";font.pixelSize:14;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter }
             }
-            Rectangle { width:16;height:16;radius:4;color:task.done?theme.accent:"transparent";border.width:1;border.color:task.done?theme.accent:"#686a71"
-                Text { anchors.centerIn:parent;text:"✓";visible:task.done;color:"#111214";font.pixelSize:10;font.bold:true }
+            Rectangle { width:16;height:16;radius:4;color:task.done?theme.accent:"transparent";border.width:1;border.color:task.done?theme.accent:theme.muted
+                Text { anchors.centerIn:parent;text:"✓";visible:task.done;color:theme.lightMode?"white":"black";font.pixelSize:10;font.bold:true }
                 MouseArea { anchors.fill:parent;onClicked:backend.setDone(task.id,!task.done) }
             }
-            TextArea { id:edit; Layout.fillWidth:true;Layout.minimumWidth:70;Layout.preferredHeight:Math.max(22,contentHeight+2);text:task.text;readOnly:!editing;property bool editing:false;color:task.done?"#676970":"#deddd8";font.pixelSize:12;font.strikeout:task.done;wrapMode:TextEdit.WordWrap;selectByMouse:true;leftPadding:0;rightPadding:0;topPadding:2;bottomPadding:2;background:Rectangle{color:edit.editing?"#1c1d20":"transparent";radius:3}
+            TextArea { id:edit; Layout.fillWidth:true;Layout.minimumWidth:70;Layout.preferredHeight:Math.max(22,contentHeight+2);text:task.text;readOnly:!editing;property bool editing:false;color:task.done?theme.darkForeground:primaryText;font.pixelSize:12;font.strikeout:task.done;wrapMode:TextEdit.WordWrap;selectByMouse:true;leftPadding:0;rightPadding:0;topPadding:2;bottomPadding:2;background:Rectangle{color:edit.editing?theme.darkerBackground:"transparent";radius:3}
                 function finishEdit(){
                     if(!editing)return
                     backend.setTaskText(task.id,text)
@@ -380,8 +405,8 @@ ApplicationWindow {
                 onClicked:backend.moveTaskUp(task.id)
                 Accessible.name:depth>0?qsTr("Move out above the parent"):backend.canIndentTaskUnderPrevious(task.id)?qsTr("Nest under the previous task"):qsTr("Move task up")
                 ToolTip.visible:hovered; ToolTip.text:depth>0?qsTr("Move out above the parent"):backend.canIndentTaskUnderPrevious(task.id)?qsTr("Nest under the previous task"):qsTr("Move task up")
-                background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered&&parent.enabled?"#2b2c30":"transparent"}
-                contentItem:Text{text:parent.text;color:parent.enabled?(parent.hovered?theme.accent:"#a0a1a6"):"#484a4f";font.pixelSize:14;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
+                background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered&&parent.enabled?theme.selection:"transparent"}
+                contentItem:Text{text:parent.text;color:parent.enabled?(parent.hovered?theme.accent:theme.lightForeground):theme.darkForeground;font.pixelSize:14;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
             }
             ToolButton {
                 text:"↓"; implicitWidth:22; implicitHeight:26
@@ -390,8 +415,8 @@ ApplicationWindow {
                 onClicked:backend.moveTaskDown(task.id,win.collapsedTaskIds)
                 Accessible.name:qsTr("Move task down one row")
                 ToolTip.visible:hovered; ToolTip.text:qsTr("Move task down one row")
-                background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered&&parent.enabled?"#2b2c30":"transparent"}
-                contentItem:Text{text:parent.text;color:parent.enabled?(parent.hovered?theme.accent:"#a0a1a6"):"#484a4f";font.pixelSize:14;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
+                background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered&&parent.enabled?theme.selection:"transparent"}
+                contentItem:Text{text:parent.text;color:parent.enabled?(parent.hovered?theme.accent:theme.lightForeground):theme.darkForeground;font.pixelSize:14;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
             }
             ToolButton {
                 text:"+"; implicitWidth:26; implicitHeight:26
@@ -400,15 +425,15 @@ ApplicationWindow {
                 enabled:depth<2&&(task.children||[]).length<2
                 Accessible.name:qsTr("Add subtask")
                 ToolTip.visible:hovered;ToolTip.text:enabled?qsTr("Add subtask"):qsTr("Maximum nesting or subtasks reached")
-                background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered?"#2b2c30":"transparent"}
-                contentItem:Text{text:"+";color:parent.enabled?(parent.hovered?theme.accent:"#8e9096"):"#484a4f";font.pixelSize:16;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
+                background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered?theme.selection:"transparent"}
+                contentItem:Text{text:"+";color:parent.enabled?(parent.hovered?theme.accent:theme.muted):theme.darkForeground;font.pixelSize:16;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
             }
             ToolButton {
                 text:"×"; implicitWidth:26; implicitHeight:26
                 onClicked:backend.removeTask(task.id)
                 Accessible.name:qsTr("Delete task")
-                background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered?"#382324":"transparent"}
-                contentItem:Text{text:"×";color:parent.hovered?"#ff8580":"#777980";font.pixelSize:16;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
+                background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered?Qt.darker(theme.red,3):"transparent"}
+                contentItem:Text{text:"×";color:parent.hovered?theme.red:theme.darkForeground;font.pixelSize:16;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
             }
         }
     }
@@ -421,28 +446,86 @@ ApplicationWindow {
             text:qsTr("Rename list")
             implicitWidth:190;implicitHeight:34
             padding:0;leftPadding:12;rightPadding:12
-            background:Rectangle { anchors.fill:parent;anchors.margins:4;radius:Math.min(4,theme.radius);color:parent.highlighted?"#303128":parent.hovered?"#26272b":"transparent" }
+            background:Rectangle { anchors.fill:parent;anchors.margins:4;radius:Math.min(4,theme.radius);color:parent.highlighted?theme.selection:parent.hovered?theme.lighterBackground:"transparent" }
             onTriggered:{listDialog.editId=listContext.listId;listDialog.nameField.text="";for(let i=0;i<backend.lists.length;i++)if(backend.lists[i].id===listContext.listId)listDialog.nameField.text=backend.lists[i].name;listDialog.open();listDialog.nameField.forceActiveFocus()}
         }
         MenuItem {
             text:qsTr("Delete list")
             implicitWidth:190;implicitHeight:34
             padding:0;leftPadding:12;rightPadding:12
-            background:Rectangle { anchors.fill:parent;anchors.margins:4;radius:Math.min(4,theme.radius);color:parent.highlighted?"#303128":parent.hovered?"#26272b":"transparent" }
+            background:Rectangle { anchors.fill:parent;anchors.margins:4;radius:Math.min(4,theme.radius);color:parent.highlighted?theme.selection:parent.hovered?theme.lighterBackground:"transparent" }
             enabled:backend.lists.length>1
             onTriggered:confirmDelete.open()
         }
     }
-    Dialog { id:listDialog; property string editId:""; property alias nameField:field; modal:true;title:editId?qsTr("Rename list"):qsTr("New list");standardButtons:Dialog.Ok|Dialog.Cancel;anchors.centerIn:parent;width:Math.min(parent.width-28,330)
+    Dialog {
+        id:listDialog; property string editId:""; property alias nameField:field; modal:true
+        title:editId?qsTr("Rename list"):qsTr("New list")
+        header:ModalHeader { heading:listDialog.title }
+        anchors.centerIn:parent;width:Math.min(parent.width-28,330)
         contentItem:TextField{id:field;placeholderText:qsTr("List name");selectByMouse:true;onAccepted:listDialog.accept()}
         onAccepted:{if(editId)backend.renameList(editId,nameField.text);else{backend.addList(nameField.text);selected=backend.currentListId}}
+        footer:DialogButtonBox { standardButtons:DialogButtonBox.Ok|DialogButtonBox.Cancel;onAccepted:listDialog.accept();onRejected:listDialog.reject();background:Rectangle{color:raisedSurface;radius:0} }
+        background:Rectangle { color:raisedSurface;radius:0 }
     }
-    Dialog { id:childDialog;property alias field:childField;modal:true;title:qsTr("Add subtask");standardButtons:Dialog.Ok|Dialog.Cancel;anchors.centerIn:parent;width:Math.min(parent.width-28,330)
+    Dialog {
+        id:childDialog;property alias field:childField;modal:true;title:qsTr("Add subtask")
+        header:ModalHeader { heading:childDialog.title }
+        anchors.centerIn:parent;width:Math.min(parent.width-28,330)
         contentItem:TextField{id:childField;placeholderText:qsTr("Subtask");selectByMouse:true;onAccepted:childDialog.accept()}
         onAccepted:backend.addTask(childField.text,addParent)
+        footer:DialogButtonBox { standardButtons:DialogButtonBox.Ok|DialogButtonBox.Cancel;onAccepted:childDialog.accept();onRejected:childDialog.reject();background:Rectangle{color:raisedSurface;radius:0} }
+        background:Rectangle { color:raisedSurface;radius:0 }
     }
-    Dialog { id:confirmDelete;modal:true;title:qsTr("Delete this list?");standardButtons:Dialog.Yes|Dialog.No;anchors.centerIn:parent;width:Math.min(parent.width-28,330);onAccepted:backend.removeList(listContext.listId) }
-    Dialog { id:helpDialog;modal:true;title:qsTr("Shortcuts");standardButtons:Dialog.Close;anchors.centerIn:parent;visible:helpVisible;onClosed:helpVisible=false;width:Math.min(parent.width-28,360)
+    Dialog {
+        id:themeDialog;modal:true;title:qsTr("Tally theme")
+        header:ModalHeader { heading:themeDialog.title }
+        anchors.centerIn:parent;width:Math.min(parent.width-28,360)
+        onOpened:themeChooser.currentIndex=theme.themeOptions.indexOf(theme.selectedTheme)
+        contentItem:ColumnLayout {
+            spacing:10
+            Label { text:qsTr("Follow system uses your current Omarchy palette. Tally themes only affect this app.");wrapMode:Text.WordWrap;Layout.fillWidth:true;color:secondaryText }
+            ComboBox {
+                id:themeChooser
+                Layout.fillWidth:true
+                model:theme.themeOptions
+                onActivated:function(index){theme.setTheme(theme.themeOptions[index])}
+            }
+        }
+        footer:DialogButtonBox { standardButtons:DialogButtonBox.Close;onRejected:themeDialog.close();background:Rectangle{color:raisedSurface;radius:0} }
+        background:Rectangle { color:raisedSurface;radius:0 }
+    }
+    Dialog {
+        id:confirmDelete;modal:true;title:qsTr("Delete this list?")
+        header:ModalHeader { heading:confirmDelete.title }
+        anchors.centerIn:parent;width:Math.min(parent.width-28,330);onAccepted:backend.removeList(listContext.listId)
+        footer:Rectangle {
+            color:raisedSurface;radius:0;implicitHeight:48
+            RowLayout {
+                anchors.fill:parent;anchors.margins:4;spacing:8
+                Item { Layout.fillWidth:true }
+                Button {
+                    text:qsTr("No")
+                    flat:true
+                    onClicked:confirmDelete.reject()
+                    background:Item{}
+                    contentItem:Text { text:parent.text;color:secondaryText;font.pixelSize:12;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter }
+                }
+                Button {
+                    text:qsTr("Yes")
+                    flat:true
+                    onClicked:confirmDelete.accept()
+                    background:Item{}
+                    contentItem:Text { text:parent.text;color:theme.red;font.pixelSize:12;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter }
+                }
+            }
+        }
+        background:Rectangle { color:raisedSurface;radius:0 }
+    }
+    Dialog {
+        id:helpDialog;modal:true;title:qsTr("Shortcuts")
+        header:ModalHeader { heading:helpDialog.title }
+        anchors.centerIn:parent;visible:helpVisible;onClosed:helpVisible=false;width:Math.min(parent.width-28,360)
         contentItem:Column {
             spacing:8
             Label { text:qsTr("Ctrl+N     Add a task") }
@@ -453,6 +536,8 @@ ApplicationWindow {
             Label { text:qsTr("↓     Nest a task or move a subtask out") }
             Label { text:qsTr("Right click a list to rename or delete") }
         }
+        footer:DialogButtonBox { standardButtons:DialogButtonBox.Close;onRejected:helpDialog.close();background:Rectangle{color:raisedSurface;radius:0} }
+        background:Rectangle { color:raisedSurface;radius:0 }
     }
     onHelpVisibleChanged:if(helpVisible)helpDialog.open()
 }
