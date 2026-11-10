@@ -40,7 +40,6 @@ static bool appendChild(QJsonArray &tasks, const QString &parentId, const QStrin
         if (task.value("id").toString() == parentId) {
             const auto children = task.value("children").toArray();
             if (depth >= 2) { error = QObject::tr("Tasks can only be nested two levels deep"); return false; }
-            if (children.size() >= 2) { error = QObject::tr("A task can have up to two subtasks"); return false; }
             auto updated = children;
             updated.append(QJsonObject{{"id", uid()}, {"text", text}, {"done", false}, {"children", QJsonArray{}}});
             task["children"] = updated;
@@ -218,7 +217,7 @@ static bool canIndentUnderNext(const QJsonArray &tasks, const QString &id, int d
         const auto task = tasks[i].toObject();
         if (task.value("id").toString() == id) {
             if (i + 1 >= tasks.size() || depth + 1 + taskSubtreeHeight(task) > 2) return false;
-            return tasks[i + 1].toObject().value("children").toArray().size() < 2;
+            return true;
         }
         if (canIndentUnderNext(task.value("children").toArray(), id, depth + 1)) return true;
     }
@@ -254,7 +253,7 @@ static bool canIndentUnderPrevious(const QJsonArray &tasks, const QString &id, i
         const auto task = tasks[i].toObject();
         if (task.value("id").toString() == id) {
             if (i == 0 || depth + 1 + taskSubtreeHeight(task) > 2) return false;
-            return tasks[i - 1].toObject().value("children").toArray().size() < 2;
+            return true;
         }
         if (canIndentUnderPrevious(task.value("children").toArray(), id, depth + 1)) return true;
     }

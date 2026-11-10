@@ -422,9 +422,9 @@ ApplicationWindow {
                 text:"+"; implicitWidth:26; implicitHeight:26
                 onClicked:addChild(task.id)
                 visible:!task.done
-                enabled:depth<2&&(task.children||[]).length<2
+                enabled:depth<2
                 Accessible.name:qsTr("Add subtask")
-                ToolTip.visible:hovered;ToolTip.text:enabled?qsTr("Add subtask"):qsTr("Maximum nesting or subtasks reached")
+                ToolTip.visible:hovered;ToolTip.text:qsTr("Add subtask")
                 background:Rectangle{radius:Math.min(4,theme.radius);color:parent.hovered?theme.selection:"transparent"}
                 contentItem:Text{text:"+";color:parent.enabled?(parent.hovered?theme.accent:theme.muted):theme.darkForeground;font.pixelSize:16;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
             }
